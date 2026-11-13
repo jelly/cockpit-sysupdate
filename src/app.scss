@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 @use "page.scss";
+@use "ct-card.scss";
+@use "patternfly/patternfly-6-overrides.scss";
+@use "global-variables" as *;
 
-p {
-    font-weight: bold;
+/* Style the list cards as ct-cards */
+.pf-v6-c-page__main-section .pf-v6-c-card {
+  @extend .ct-card;
 }

@@ -3,7 +3,7 @@ PACKAGE_NAME := $(shell awk '/"name":/ {gsub(/[",]/, "", $$2); print $$2}' packa
 RPM_NAME := cockpit-$(PACKAGE_NAME)
 VERSION := $(shell T=$$(git describe 2>/dev/null) || T=1; echo $$T | tr '-' '.')
 ifeq ($(TEST_OS),)
-TEST_OS = centos-9-stream
+TEST_OS = fedora-rawhide
 endif
 export TEST_OS
 TARFILE=$(RPM_NAME)-$(VERSION).tar.xz
@@ -167,7 +167,7 @@ rpm: $(TARFILE) $(NODE_CACHE) $(SPEC)
 # disable networking, VM images have mock/pbuilder with the common build dependencies pre-installed
 $(VM_IMAGE): export XZ_OPT=-0
 $(VM_IMAGE): $(TARFILE) $(NODE_CACHE) bots test/vm.install
-	bots/image-customize --no-network --fresh \
+	bots/image-customize --verbose --no-network --fresh \
 		--upload $(NODE_CACHE):/var/tmp/ --build $(TARFILE) \
 		--script $(CURDIR)/test/vm.install $(TEST_OS)
 

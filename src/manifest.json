@@ -1,11 +1,18 @@
 {
+    "name": "updates",
     "requires": {
-        "cockpit": "137"
+        "cockpit": "125"
     },
+    "conditions": [
+        {"path-exists": "/run/systemd/io.systemd.SysUpdate"},
+        {"path-exists": "/usr/lib/sysupdate.d/"}
+    ],
 
     "tools": {
         "index": {
-            "label": "Starter Kit"
+            "label": "Software updates"
         }
-    }
+    },
+
+    "preload": [ "index" ]
 }

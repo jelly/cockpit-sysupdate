@@ -1,17 +1,12 @@
-Name: cockpit-starter-kit
+Name: cockpit-sysupdate
 Version: %{VERSION}
 Release: 1%{?dist}
-Summary: Cockpit Starter Kit Example Module
+Summary: Cockpit SysUpdate Module
 License: LGPL-2.1-or-later
-URL:     https://github.com/cockpit-project/starter-kit
+URL:     https://github.com/jellly/sysupdate
 
-# distributions which ship nodejs-esbuild can rebuild the bundle during package build
-%if 0%{?fedora} >= 42
-%define rebuild_bundle 1
-%endif
-
-Source0: https://github.com/cockpit-project/starter-kit/releases/download/%{version}/%{name}-%{version}.tar.xz
-Source1: https://github.com/cockpit-project/starter-kit/releases/download/%{version}/%{name}-node-%{version}.tar.xz
+Source0: https://github.com/jelly/sysupdate/releases/download/%{version}/%{name}-%{version}.tar.xz
+Source1: https://github.com/jelly/sysupdate/releases/download/%{version}/%{name}-node-%{version}.tar.xz
 
 BuildArch: noarch
 %if ! 0%{?suse_version}
@@ -28,34 +23,25 @@ BuildRequires: gettext
 %if 0%{?rhel} && 0%{?rhel} <= 8
 BuildRequires: libappstream-glib-devel
 %endif
-%if %{defined rebuild_bundle}
 BuildRequires: /usr/bin/node
 BuildRequires: nodejs-esbuild
-%endif
 
 Requires: cockpit-bridge
 
 %{NPM_PROVIDES}
 
 %description
-Cockpit Starter Kit Example Module
+Cockpit SysUpdate plugin
 
 %prep
-%autosetup -n %{name}
-%if %{defined rebuild_bundle}
+%setup -q -n %{name}
 %setup -q -D -T -a 1 -n %{name}
-%endif
 
 %build
-%if %{defined rebuild_bundle}
 rm -rf dist
 # HACK: node module packaging is broken in Fedora ≤ 43; should be in
 # common location, not major version specific one
 NODE_ENV=production NODE_PATH=/usr/lib/node_modules:$(echo /usr/lib/node_modules_*) ./build.js
-%else
-# Use pre-built bundle on distributions without nodejs-esbuild
-%endif
-
 
 %install
 %make_install PREFIX=/usr
