@@ -15,7 +15,6 @@ export function varlinkCall(method, parameters = {}) {
 
         if (nul < 0) return;
 
-        console.log(buf);
         const reply = JSON.parse(buf.slice(0, nul));
         done = true;
         ch.close();
@@ -32,4 +31,20 @@ export function varlinkCall(method, parameters = {}) {
     });
     ch.send(new TextEncoder().encode(JSON.stringify({ method, parameters }) + "\0"));
   });
+}
+
+// Varlink has no method to enable features, so use sysupdated's D-Bus API
+export async function setFeatureEnabled(feature: string, enabled: boolean): Promise<void> {
+    const client = cockpit.dbus("org.freedesktop.sysupdate1", { bus: "system", superuser: "require" });
+    try {
+        const [targets] = await client.call("/org/freedesktop/sysupdate1",
+                                            "org.freedesktop.sysupdate1.Manager", "ListTargets", []) as [[string, string, string][]];
+        const host = targets.find(([cls]) => cls === "host");
+        if (!host)
+            throw new Error("sysupdate has no host target");
+        await client.call(host[2], "org.freedesktop.sysupdate1.Target", "SetFeatureEnabled",
+                          [feature, enabled ? 1 : 0, 0]);
+    } finally {
+        client.close();
+    }
 }

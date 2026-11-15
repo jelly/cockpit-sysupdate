@@ -11,3 +11,50 @@ if systemctl is-active -q firewalld.service; then
     firewall-cmd --add-service=cockpit --permanent
 fi
 systemctl enable cockpit.socket
+
+systemctl enable systemd-sysupdate.socket
+
+# The fake "server" and the fake installed system
+mkdir -p /var/tmp/fake-source /var/tmp/fake-os
+echo v1 >/var/tmp/fake-source/fakeos-1.0.img
+echo v1 >/var/tmp/fake-os/fakeos-1.0.img # pretend 1.0 is installed
+
+# Host transfer, plus one optional feature
+mkdir -p /etc/sysupdate.d
+cat >/etc/sysupdate.d/50-fakeos.transfer <<'EOF'
+[Transfer]
+AppStream=https://example.com/appstream/fakeos.xml
+
+[Source]
+Type=regular-file
+Path=/var/tmp/fake-source
+MatchPattern=fakeos-@v.img
+
+[Target]
+Type=regular-file
+Path=/var/tmp/fake-os
+MatchPattern=fakeos-@v.img
+InstancesMax=3
+EOF
+
+cat >/etc/sysupdate.d/devel.feature <<'EOF'
+[Feature]
+Description=Developer Tools
+Documentation=https://example.com/devel
+Suggest=yes
+EOF
+
+cat >/etc/sysupdate.d/60-devel.transfer <<'EOF'
+[Transfer]
+Features=devel
+
+[Source]
+Type=regular-file
+Path=/var/tmp/fake-source
+MatchPattern=devel-@v.img
+
+[Target]
+Type=regular-file
+Path=/var/tmp/fake-os
+MatchPattern=devel-@v.img
+EOF
